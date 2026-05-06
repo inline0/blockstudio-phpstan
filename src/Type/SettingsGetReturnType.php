@@ -41,6 +41,7 @@ final class SettingsGetReturnType implements DynamicStaticMethodReturnTypeExtens
             'tailwind/enabled' => new BooleanType(),
             'tailwind/config' => new StringType(),
             'blockEditor/disableLoading' => new BooleanType(),
+            'blockEditor/enhance' => new BooleanType(),
             'blockEditor/cssClasses' => new ArrayType(new IntegerType(), new StringType()),
             'blockEditor/cssVariables' => new ArrayType(new IntegerType(), new StringType()),
             'ai/enableContextGeneration' => new BooleanType(),
