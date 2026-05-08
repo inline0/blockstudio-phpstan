@@ -20,7 +20,13 @@ final class ProjectScanner
 
     private bool $scanned = false;
 
-    public function __construct(private readonly string $currentWorkingDirectory) {}
+    /**
+     * @param list<string> $additionalScanRoots
+     */
+    public function __construct(
+        private readonly string $currentWorkingDirectory,
+        private readonly array $additionalScanRoots = []
+    ) {}
 
     /**
      * @return list<string>
@@ -91,9 +97,13 @@ final class ProjectScanner
             $this->currentWorkingDirectory . '/src/blockstudio',
             $this->currentWorkingDirectory . '/wp-content/themes',
             $this->currentWorkingDirectory,
+            ...$this->additionalScanRoots,
         ];
 
-        return array_values(array_unique($candidates));
+        return array_values(array_unique(array_filter(
+            $candidates,
+            static fn(string $path): bool => $path !== ''
+        )));
     }
 
     private function walkDirectory(string $dir): void

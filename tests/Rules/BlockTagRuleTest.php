@@ -19,9 +19,13 @@ final class BlockTagRuleTest extends RuleTestCase
 {
     private string $fixtureDir = '';
 
+    /** @var list<string> */
+    private array $additionalScanRoots = [];
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->additionalScanRoots = [];
         $reflection = new ReflectionClass(BlockTagRule::class);
         $property = $reflection->getProperty('scannedFiles');
         $property->setAccessible(true);
@@ -31,7 +35,7 @@ final class BlockTagRuleTest extends RuleTestCase
     protected function getRule(): Rule
     {
         return new BlockTagRule(
-            new ProjectScanner($this->fixtureDir),
+            new ProjectScanner($this->fixtureDir, $this->additionalScanRoots),
             new BlockJsonReader(new FieldTypeRegistry())
         );
     }
@@ -84,6 +88,17 @@ final class BlockTagRuleTest extends RuleTestCase
         );
         $this->assertEmpty(
             array_filter($errors, static fn($e) => str_contains($e, 'core/separator'))
+        );
+    }
+
+    public function test_external_scan_roots_are_known_blocks(): void
+    {
+        $this->fixtureDir = __DIR__ . '/data/block-tags/uses-external-block';
+        $this->additionalScanRoots = [__DIR__ . '/data/block-tags/external-library'];
+
+        $this->analyse(
+            [__DIR__ . '/data/block-tags/uses-external-block/blockstudio/hero/index.php'],
+            []
         );
     }
 
