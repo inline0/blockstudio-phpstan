@@ -181,6 +181,15 @@ The extension requires no manual configuration. It auto-discovers
 `block.json`, `db.php`, `rpc.php`, `cron.php`, `page.json`, `field.json`, and
 `blockstudio.json` files in your project.
 
+If a project references blocks from a library outside the project root, add the
+library directory to `blockstudioScanRoots`:
+
+```yaml
+parameters:
+  blockstudioScanRoots:
+    - vendor/acme/block-library/blocks
+```
+
 If you need to exclude specific paths, use PHPStan's standard `excludePaths`:
 
 ```yaml

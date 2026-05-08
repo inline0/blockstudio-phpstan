@@ -1,4 +1,5 @@
 parameters:
+  blockstudioScanRoots: []
   bootstrapFiles:
     - src/Stubs/loader.php
 
@@ -7,6 +8,7 @@ services:
     class: Blockstudio\PHPStan\Schema\ProjectScanner
     arguments:
       currentWorkingDirectory: %currentWorkingDirectory%
+      additionalScanRoots: %blockstudioScanRoots%
 
   -
     class: Blockstudio\PHPStan\Schema\BlockJsonReader

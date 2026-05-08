@@ -1,0 +1,11 @@
+{
+  "name": "bsui/button",
+  "blockstudio": {
+    "attributes": [
+      {
+        "id": "label",
+        "type": "text"
+      }
+    ]
+  }
+}
