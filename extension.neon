@@ -3,6 +3,9 @@ parameters:
   bootstrapFiles:
     - src/Stubs/loader.php
 
+parametersSchema:
+  blockstudioScanRoots: listOf(string())
+
 services:
   -
     class: Blockstudio\PHPStan\Schema\ProjectScanner
