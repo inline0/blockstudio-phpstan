@@ -50,4 +50,18 @@ final class PageJsonShapeRuleTest extends RuleTestCase
         }
         $this->assertTrue($found, 'Expected page.json errors. Got: ' . implode("\n", $errors));
     }
+
+    public function test_page_index_without_page_json_reports_error(): void
+    {
+        $this->fixtureDir = __DIR__ . '/data/page-json/missing';
+        $errors = array_map(
+            static fn($e) => $e->getMessage(),
+            $this->gatherAnalyserErrors([$this->fixtureDir . '/blockstudio/hero/index.php'])
+        );
+
+        $this->assertContains(
+            'Blockstudio page directory has index.php but is missing page.json: ' . $this->fixtureDir . '/pages/agent-loop',
+            $errors
+        );
+    }
 }

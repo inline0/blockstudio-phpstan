@@ -33,6 +33,21 @@ final class PageJsonShapeRule implements Rule
     {
         $errors = [];
 
+        foreach ($this->findPageIndexFilesMissingMetadata() as $path) {
+            $key = 'missing:' . $path;
+            if (isset(self::$validatedPaths[$key])) {
+                continue;
+            }
+            self::$validatedPaths[$key] = true;
+            $errors[] = RuleErrorBuilder::message(sprintf(
+                'Blockstudio page directory has index.php but is missing page.json: %s',
+                dirname($path)
+            ))
+                ->identifier('blockstudio.pageJson.missing')
+                ->file($path)
+                ->build();
+        }
+
         foreach ($this->findPageJsonFiles() as $path) {
             if (isset(self::$validatedPaths[$path])) {
                 continue;
@@ -73,6 +88,51 @@ final class PageJsonShapeRule implements Rule
         }
 
         return array_values($files);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function findPageIndexFilesMissingMetadata(): array
+    {
+        $files = [];
+        $candidates = [
+            $this->currentWorkingDirectory . '/pages',
+            $this->currentWorkingDirectory . '/wp-content/themes',
+        ];
+
+        foreach ($candidates as $root) {
+            if (!is_dir($root)) {
+                continue;
+            }
+            try {
+                $iterator = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+                );
+                foreach ($iterator as $file) {
+                    if (!$file instanceof \SplFileInfo || $file->getFilename() !== 'index.php') {
+                        continue;
+                    }
+
+                    $path = $file->getPathname();
+                    if (!$this->isDirectPageIndexFile($path)) {
+                        continue;
+                    }
+
+                    if (!file_exists(dirname($path) . '/page.json')) {
+                        $files[$path] = $path;
+                    }
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        return array_values($files);
+    }
+
+    private function isDirectPageIndexFile(string $path): bool
+    {
+        return basename(dirname(dirname($path))) === 'pages';
     }
 
     /**
