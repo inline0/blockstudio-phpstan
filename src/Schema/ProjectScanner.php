@@ -77,27 +77,31 @@ final class ProjectScanner
         }
         $this->scanned = true;
 
-        $roots = $this->getScanRoots();
-
-        foreach ($roots as $root) {
+        foreach ($this->getProjectScanRoots() as $root) {
             if (!is_dir($root)) {
                 continue;
             }
-            $this->walkDirectory($root);
+            $this->walkDirectory($root, true);
+        }
+
+        foreach ($this->additionalScanRoots as $root) {
+            if (!is_dir($root)) {
+                continue;
+            }
+            $this->walkDirectory($root, false);
         }
     }
 
     /**
      * @return list<string>
      */
-    private function getScanRoots(): array
+    private function getProjectScanRoots(): array
     {
         $candidates = [
             $this->currentWorkingDirectory . '/blockstudio',
             $this->currentWorkingDirectory . '/src/blockstudio',
             $this->currentWorkingDirectory . '/wp-content/themes',
             $this->currentWorkingDirectory,
-            ...$this->additionalScanRoots,
         ];
 
         return array_values(array_unique(array_filter(
@@ -106,7 +110,7 @@ final class ProjectScanner
         )));
     }
 
-    private function walkDirectory(string $dir): void
+    private function walkDirectory(string $dir, bool $includeInProjectPaths): void
     {
         if ($this->shouldSkipDirectory($dir)) {
             return;
@@ -134,10 +138,13 @@ final class ProjectScanner
                 continue;
             }
             $path = $file->getPathname();
-            if (in_array($path, $this->blockJsonPaths, true)) {
-                continue;
+
+            if ($includeInProjectPaths) {
+                if (in_array($path, $this->blockJsonPaths, true)) {
+                    continue;
+                }
+                $this->blockJsonPaths[] = $path;
             }
-            $this->blockJsonPaths[] = $path;
 
             $name = $this->extractBlockName($path);
             if ($name !== null) {
