@@ -41,6 +41,7 @@ final class HookCallbackRule implements Rule
         'blockstudio/assets/process/scss/prelude',
         'blockstudio/block_tags/renderers',
         'blockstudio/parser/renderers',
+        'blockstudio/parser/element_mapping',
         'blockstudio/block_tags/allow',
         'blockstudio/block_tags/deny',
         'blockstudio/block_tags/builders',

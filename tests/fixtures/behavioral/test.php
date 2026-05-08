@@ -18,6 +18,7 @@ Settings::get('users/idz');                  // typo
 add_filter('blockstudio/render', function ($html) { return $html; });
 add_action('blockstudio/init', function () {});
 add_filter('blockstudio/admin/enabled', '__return_false');
+add_filter('blockstudio/parser/element_mapping', function (array $mapping): array { return $mapping; });
 
 // Invalid blockstudio hooks (should error)
 add_filter('blockstudio/rendrr', function ($html) { return $html; });    // typo
