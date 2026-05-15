@@ -103,6 +103,10 @@ final class BlockJsonShapeRule implements Rule
             return $errors;
         }
 
+        if (is_array($bs)) {
+            $errors = array_merge($errors, $this->validatePluginDependencies($bs['pluginDependencies'] ?? null, $path));
+        }
+
         $attributes = $bs['attributes'] ?? null;
         if ($attributes !== null && !is_array($attributes)) {
             $errors[] = RuleErrorBuilder::message(sprintf(
@@ -120,6 +124,116 @@ final class BlockJsonShapeRule implements Rule
         }
 
         return $errors;
+    }
+
+    /**
+     * @return list<\PHPStan\Rules\IdentifierRuleError>
+     */
+    private function validatePluginDependencies(mixed $pluginDependencies, string $path): array
+    {
+        if ($pluginDependencies === null) {
+            return [];
+        }
+
+        if (!is_array($pluginDependencies)) {
+            return [
+                RuleErrorBuilder::message(sprintf(
+                    'block.json "blockstudio.pluginDependencies" must be an array or object: %s',
+                    $path
+                ))
+                    ->identifier('blockstudio.blockJson.pluginDependencies')
+                    ->file($path)
+                    ->build(),
+            ];
+        }
+
+        $errors = [];
+
+        if (array_is_list($pluginDependencies)) {
+            foreach ($pluginDependencies as $i => $dependency) {
+                if (!is_string($dependency)) {
+                    $errors[] = RuleErrorBuilder::message(sprintf(
+                        'block.json "blockstudio.pluginDependencies[%s]" must be a plugin slug string: %s',
+                        (string) $i,
+                        $path
+                    ))
+                        ->identifier('blockstudio.blockJson.pluginDependencies')
+                        ->file($path)
+                        ->build();
+                    continue;
+                }
+
+                if (!$this->isPluginDependencySlug($dependency)) {
+                    $errors[] = RuleErrorBuilder::message(sprintf(
+                        'block.json "blockstudio.pluginDependencies[%s]" must be a WordPress plugin slug: %s',
+                        (string) $i,
+                        $path
+                    ))
+                        ->identifier('blockstudio.blockJson.pluginDependencies')
+                        ->file($path)
+                        ->build();
+                }
+            }
+
+            return $errors;
+        }
+
+        foreach ($pluginDependencies as $slug => $dependency) {
+            if (!is_string($slug) || !$this->isPluginDependencySlug($slug)) {
+                $errors[] = RuleErrorBuilder::message(sprintf(
+                    'block.json "blockstudio.pluginDependencies" keys must be WordPress plugin slugs: %s',
+                    $path
+                ))
+                    ->identifier('blockstudio.blockJson.pluginDependencies')
+                    ->file($path)
+                    ->build();
+                continue;
+            }
+
+            if (!is_array($dependency)) {
+                $errors[] = RuleErrorBuilder::message(sprintf(
+                    'block.json "blockstudio.pluginDependencies.%s" must be an object: %s',
+                    $slug,
+                    $path
+                ))
+                    ->identifier('blockstudio.blockJson.pluginDependencies')
+                    ->file($path)
+                    ->build();
+                continue;
+            }
+
+            foreach (array_keys($dependency) as $key) {
+                if ($key !== 'version') {
+                    $errors[] = RuleErrorBuilder::message(sprintf(
+                        'block.json "blockstudio.pluginDependencies.%s.%s" is not supported: %s',
+                        $slug,
+                        (string) $key,
+                        $path
+                    ))
+                        ->identifier('blockstudio.blockJson.pluginDependencies')
+                        ->file($path)
+                        ->build();
+                }
+            }
+
+            if (isset($dependency['version']) && !is_string($dependency['version'])) {
+                $errors[] = RuleErrorBuilder::message(sprintf(
+                    'block.json "blockstudio.pluginDependencies.%s.version" must be a string: %s',
+                    $slug,
+                    $path
+                ))
+                    ->identifier('blockstudio.blockJson.pluginDependencies')
+                    ->file($path)
+                    ->build();
+            }
+        }
+
+        return $errors;
+    }
+
+    private function isPluginDependencySlug(string $slug): bool
+    {
+        return preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $slug) === 1;
     }
 
     /**

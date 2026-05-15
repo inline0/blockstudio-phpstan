@@ -1,6 +1,12 @@
 {
   "name": "test/hero",
   "blockstudio": {
+    "pluginDependencies": {
+      "woocommerce": {
+        "version": ">6"
+      },
+      "advanced-custom-fields": {}
+    },
     "attributes": [
       { "id": "title", "type": "text" },
       {

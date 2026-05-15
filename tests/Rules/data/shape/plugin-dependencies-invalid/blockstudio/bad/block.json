@@ -1,0 +1,14 @@
+{
+  "name": "test/bad",
+  "blockstudio": {
+    "pluginDependencies": {
+      "advanced-custom-fields/acf.php": {
+        "version": 6
+      },
+      "woocommerce": false,
+      "contact-form-7": {
+        "version": 6
+      }
+    }
+  }
+}

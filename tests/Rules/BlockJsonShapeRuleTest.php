@@ -24,7 +24,6 @@ final class BlockJsonShapeRuleTest extends RuleTestCase
         parent::setUp();
         $reflection = new ReflectionClass(BlockJsonShapeRule::class);
         $property = $reflection->getProperty('validatedPaths');
-        $property->setAccessible(true);
         $property->setValue(null, []);
     }
 
@@ -93,6 +92,15 @@ final class BlockJsonShapeRuleTest extends RuleTestCase
             [$this->fixtureDir . '/blockstudio/good/index.php'],
             []
         );
+    }
+
+    public function test_plugin_dependencies_must_use_slug_keys_and_object_values(): void
+    {
+        $this->fixtureDir = __DIR__ . '/data/shape/plugin-dependencies-invalid';
+        $errors = $this->gatherErrors([$this->fixtureDir . '/blockstudio/bad/index.php']);
+        $this->assertContainsErrorMessage('keys must be WordPress plugin slugs', $errors);
+        $this->assertContainsErrorMessage('blockstudio.pluginDependencies.woocommerce', $errors);
+        $this->assertContainsErrorMessage('blockstudio.pluginDependencies.contact-form-7.version', $errors);
     }
 
     /**
