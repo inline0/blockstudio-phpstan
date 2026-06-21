@@ -6,15 +6,15 @@
         "type": "tabs",
         "tabs": [
           {
-            "title": "General",
+            "title": "Content",
             "attributes": [
-              { "id": "title", "type": "text" }
+              { "id": "perPage", "type": "number" }
             ]
           },
           {
             "title": "Style",
             "attributes": [
-              { "id": "color", "type": "color" }
+              { "id": "gap", "type": "text" }
             ]
           }
         ]

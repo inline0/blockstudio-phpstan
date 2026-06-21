@@ -102,22 +102,7 @@ final class BlockJsonReader
         array $field,
         string $prefix
     ): void {
-        $id = (string) ($field['id'] ?? $field['key'] ?? '');
-        if ($id === '') {
-            return;
-        }
-
         $type = (string) ($field['type'] ?? 'text');
-        $key = $prefix === '' ? $id : $prefix . '_' . $id;
-
-        if ($type === 'group' && isset($field['attributes']) && is_array($field['attributes'])) {
-            foreach ($field['attributes'] as $child) {
-                if (is_array($child)) {
-                    $this->addFieldToShape($builder, $child, $key);
-                }
-            }
-            return;
-        }
 
         if ($type === 'tabs' && isset($field['tabs']) && is_array($field['tabs'])) {
             foreach ($field['tabs'] as $tab) {
@@ -128,6 +113,22 @@ final class BlockJsonReader
                     if (is_array($child)) {
                         $this->addFieldToShape($builder, $child, $prefix);
                     }
+                }
+            }
+            return;
+        }
+
+        $id = (string) ($field['id'] ?? $field['key'] ?? '');
+        if ($id === '') {
+            return;
+        }
+
+        $key = $prefix === '' ? $id : $prefix . '_' . $id;
+
+        if ($type === 'group' && isset($field['attributes']) && is_array($field['attributes'])) {
+            foreach ($field['attributes'] as $child) {
+                if (is_array($child)) {
+                    $this->addFieldToShape($builder, $child, $key);
                 }
             }
             return;

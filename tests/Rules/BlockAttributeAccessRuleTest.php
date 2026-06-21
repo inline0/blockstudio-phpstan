@@ -63,6 +63,14 @@ final class BlockAttributeAccessRuleTest extends RuleTestCase
         );
     }
 
+    public function test_idless_tabs_container_fields_are_available(): void
+    {
+        $this->analyse(
+            [__DIR__ . '/data/blocks/tabs/index.php'],
+            []
+        );
+    }
+
     public function test_attributes_variable_also_supported(): void
     {
         $this->analyse(

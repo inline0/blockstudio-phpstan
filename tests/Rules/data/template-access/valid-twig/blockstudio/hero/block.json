@@ -1,1 +1,19 @@
-{"name":"mytheme/hero","blockstudio":{"attributes":[{"id":"title","type":"text"},{"id":"subtitle","type":"text"}]}}
+{
+  "name": "mytheme/hero",
+  "blockstudio": {
+    "attributes": [
+      {
+        "type": "tabs",
+        "tabs": [
+          {
+            "title": "Content",
+            "attributes": [
+              { "id": "title", "type": "text" },
+              { "id": "subtitle", "type": "text" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

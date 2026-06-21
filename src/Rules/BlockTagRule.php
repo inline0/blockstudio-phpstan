@@ -162,18 +162,7 @@ final class BlockTagRule implements Rule
                 continue;
             }
 
-            $id = (string) ($field['id'] ?? $field['key'] ?? '');
-            if ($id === '') {
-                continue;
-            }
-
             $type = (string) ($field['type'] ?? 'text');
-            $key = $prefix === '' ? $id : $prefix . '_' . $id;
-
-            if ($type === 'group' && isset($field['attributes']) && is_array($field['attributes'])) {
-                $keys = array_merge($keys, $this->collectAttributeKeys($field['attributes'], $key));
-                continue;
-            }
 
             if ($type === 'tabs' && isset($field['tabs']) && is_array($field['tabs'])) {
                 foreach ($field['tabs'] as $tab) {
@@ -181,6 +170,18 @@ final class BlockTagRule implements Rule
                         $keys = array_merge($keys, $this->collectAttributeKeys($tab['attributes'], $prefix));
                     }
                 }
+                continue;
+            }
+
+            $id = (string) ($field['id'] ?? $field['key'] ?? '');
+            if ($id === '') {
+                continue;
+            }
+
+            $key = $prefix === '' ? $id : $prefix . '_' . $id;
+
+            if ($type === 'group' && isset($field['attributes']) && is_array($field['attributes'])) {
+                $keys = array_merge($keys, $this->collectAttributeKeys($field['attributes'], $key));
                 continue;
             }
 
