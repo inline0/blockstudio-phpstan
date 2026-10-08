@@ -72,6 +72,22 @@ final class ExtensionJsonShapeRule implements Rule
     }
 
     /**
+     * A target is a block name, a wildcard such as core/*, or a list of those.
+     */
+    private function isTargetList(mixed $name): bool
+    {
+        $targets = is_array($name) && array_is_list($name) ? $name : [$name];
+
+        foreach ($targets as $target) {
+            if (!is_string($target) || trim($target) === '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @return list<\PHPStan\Rules\IdentifierRuleError>
      */
     private function validateFile(string $path): array
@@ -93,9 +109,18 @@ final class ExtensionJsonShapeRule implements Rule
 
         $errors = [];
 
-        if (!isset($data['name']) || !is_string($data['name']) || $data['name'] === '') {
+        $name = $data['name'] ?? null;
+        if ($name === null || $name === '' || $name === []) {
             $errors[] = RuleErrorBuilder::message(sprintf(
                 'Extension JSON missing required "name" (target block): %s',
+                $this->scanner->relativePath($path)
+            ))
+                ->identifier('blockstudio.extensionJson.name')
+                ->file($path)
+                ->build();
+        } elseif (!$this->isTargetList($name)) {
+            $errors[] = RuleErrorBuilder::message(sprintf(
+                'Extension JSON "name" must be a block name or a list of block names: %s',
                 $this->scanner->relativePath($path)
             ))
                 ->identifier('blockstudio.extensionJson.name')
