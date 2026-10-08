@@ -35,6 +35,7 @@ require_once __DIR__ . '/Performance_Measurement.php';
 require_once __DIR__ . '/Field_Registry.php';
 require_once __DIR__ . '/Build.php';
 require_once __DIR__ . '/Virtual_Routes.php';
+require_once __DIR__ . '/Blade_Renderer.php';
 require_once __DIR__ . '/Db_Storage.php';
 require_once __DIR__ . '/Db_Field.php';
 require_once __DIR__ . '/Db_Schema.php';
