@@ -49,6 +49,17 @@ final class BlockTemplateVariableType implements ExpressionTypeResolverExtension
         private readonly BlockJsonReader $reader
     ) {}
 
+    /**
+     * Whether Blockstudio passes a variable of this name to every template.
+     */
+    public static function isTemplateVariable(string $name): bool
+    {
+        return isset(self::ATTRIBUTE_VARIABLES[$name])
+            || isset(self::ARRAY_VARIABLES[$name])
+            || isset(self::STRING_VARIABLES[$name])
+            || isset(self::BOOLEAN_VARIABLES[$name]);
+    }
+
     public function getType(Expr $expr, Scope $scope): ?Type
     {
         if (!$expr instanceof Variable || !is_string($expr->name)) {
@@ -57,12 +68,7 @@ final class BlockTemplateVariableType implements ExpressionTypeResolverExtension
 
         $name = $expr->name;
 
-        if (
-            !isset(self::ATTRIBUTE_VARIABLES[$name])
-            && !isset(self::ARRAY_VARIABLES[$name])
-            && !isset(self::STRING_VARIABLES[$name])
-            && !isset(self::BOOLEAN_VARIABLES[$name])
-        ) {
+        if (!self::isTemplateVariable($name)) {
             return null;
         }
 

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://blockstudio.dev/schema/block",
+  "apiVersion": 3,
+  "name": "test/template-variables-direct",
+  "title": "Direct",
+  "category": "layout",
+  "blockstudio": {
+    "attributes": [
+      { "id": "label", "type": "text" },
+      { "id": "featured", "type": "toggle" }
+    ]
+  }
+}

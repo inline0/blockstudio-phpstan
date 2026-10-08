@@ -41,6 +41,24 @@ final class BlockTemplateVariableAnalysisTest extends TestCase
         );
     }
 
+    public function test_template_variables_are_defined_in_block_templates_only(): void
+    {
+        $analysis = $this->analyseFixture();
+        $undefined = static fn(string $file): array => array_values(array_map(
+            static fn(array $message): string => $message['line'] . ':' . $message['message'],
+            array_filter(
+                $analysis['messages'][$file] ?? [],
+                static fn(array $message): bool => $message['identifier'] === 'variable.undefined'
+            )
+        ));
+
+        $this->assertSame(
+            ['9:Variable $undefined_value might not be defined.'],
+            $undefined('blockstudio/direct/index.php')
+        );
+        $this->assertSame(['4:Undefined variable: $a'], $undefined('helper.php'));
+    }
+
     /**
      * @return array{stdout: string, messages: array<string, list<array{line: int, identifier: string, message: string}>>}
      */

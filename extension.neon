@@ -45,6 +45,11 @@ services:
       - phpstan.broker.expressionTypeResolverExtension
 
   -
+    class: Blockstudio\PHPStan\Type\BlockTemplateVariableDefinitions
+    tags:
+      - phpstan.ignoreErrorExtension
+
+  -
     class: Blockstudio\PHPStan\Type\DbGetReturnType
     tags:
       - phpstan.broker.dynamicStaticMethodReturnTypeExtension

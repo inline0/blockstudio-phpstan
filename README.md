@@ -36,6 +36,10 @@ echo $a['subtitle'];  // OK
 echo $a['typo'];      // Error: Field "typo" does not exist in block.json
 ```
 
+`$a`, `$block`, `$context` and the other variables Blockstudio passes to a
+template are typed and count as defined, so direct reads need no `@var`
+docblock.
+
 Field keys follow Blockstudio's runtime flattening rules. `tabs` and anonymous
 `group` containers without an `id` keep their children in the parent scope.
 Named groups prefix child keys, so a `text` field inside a `cta` group is
@@ -502,7 +506,7 @@ when explicitly selected.
 ## Requirements
 
 - PHP 8.2+
-- PHPStan 2.0+
+- PHPStan 2.1.47+
 - [phpstan/phpstan-wordpress](https://github.com/szepeviktor/phpstan-wordpress)
 - [Phasis](https://github.com/phasis/phasis) for JavaScript parsing
 - [BCMath compatibility](https://github.com/phpseclib/bcmath_compat) for hosts
