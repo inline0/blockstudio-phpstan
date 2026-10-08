@@ -84,6 +84,14 @@ final class AnalysisConfigurationTest extends TestCase
                 'roots' => ['../theme', '../theme'],
                 'excludePaths' => ['fixtures/**', 'vendor/**'],
                 'maxFiles' => 4321,
+                'blockTags' => [
+                    'elements' => [
+                        'section' => 'layout/section',
+                        'div' => [['attribute' => 'width', 'block' => 'layout/row'], 'elements/div'],
+                    ],
+                    'aliases' => ['theme-button' => 'bsui/button'],
+                    'scanPhp' => true,
+                ],
             ],
         ], JSON_THROW_ON_ERROR));
 
@@ -154,6 +162,26 @@ final class AnalysisConfigurationTest extends TestCase
         yield 'invalid limit' => [
             ['phpstan' => ['maxFiles' => 0]],
             'phpstan.maxFiles must be a positive integer',
+        ];
+        yield 'block tags list' => [
+            ['phpstan' => ['blockTags' => ['elements']]],
+            'phpstan.blockTags must be a JSON object',
+        ];
+        yield 'unknown block tags key' => [
+            ['phpstan' => ['blockTags' => ['mapping' => []]]],
+            'Unsupported blockstudio.json phpstan.blockTags key: mapping',
+        ];
+        yield 'invalid element target' => [
+            ['phpstan' => ['blockTags' => ['elements' => ['div' => [['when' => 'width', 'block' => 'layout/row']]]]]],
+            'phpstan.blockTags.elements.div must be a block name or a list',
+        ];
+        yield 'invalid alias' => [
+            ['phpstan' => ['blockTags' => ['aliases' => ['button' => 'bsui/button']]]],
+            'phpstan.blockTags.aliases must map hyphenated lowercase tag names',
+        ];
+        yield 'invalid scanPhp' => [
+            ['phpstan' => ['blockTags' => ['scanPhp' => 'yes']]],
+            'phpstan.blockTags.scanPhp must be a boolean',
         ];
     }
 

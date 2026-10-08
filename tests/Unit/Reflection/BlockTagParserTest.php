@@ -89,6 +89,49 @@ final class BlockTagParserTest extends TestCase
         $this->assertCount(0, $tags);
     }
 
+    public function test_bs_tags_list_every_hyphen_as_a_candidate(): void
+    {
+        $tags = $this->parser->extractTags('<bs:theme-components-card title="A" />');
+        $this->assertCount(1, $tags);
+        $this->assertSame('bs', $tags[0]['kind']);
+        $this->assertSame(['theme/components-card', 'theme-components/card'], $tags[0]['candidates']);
+    }
+
+    public function test_prefix_alias_and_element_tags_are_parsed_when_named(): void
+    {
+        $content = '<acme-card title="A"><theme-button label="B" /><section width="wide">x</section><sections /></acme-card><p class="c">t</p>';
+
+        $this->assertCount(0, array_filter(
+            $this->parser->extractTags($content),
+            static fn(array $tag): bool => $tag['kind'] !== 'bs' && $tag['kind'] !== 'block'
+        ));
+
+        $tags = $this->parser->extractTags($content, ['acme'], ['theme-button'], ['section']);
+        $this->assertSame(
+            [
+                ['prefix', 'acme-card', ['title' => 'A']],
+                ['alias', 'theme-button', ['label' => 'B']],
+                ['element', 'section', ['width' => 'wide']],
+            ],
+            array_map(
+                static fn(array $tag): array => [$tag['kind'], $tag['tag'], $tag['attributes']],
+                $tags
+            )
+        );
+    }
+
+    public function test_php_spans_and_angle_brackets_stay_inside_the_opening_tag(): void
+    {
+        $content = '<section class="<?php echo esc_attr( $c ); ?>" data-x="[&>span]:a" <?php echo $attributes; ?> id="i">x</section>';
+        $tags = $this->parser->extractTags($content, [], [], ['section']);
+
+        $this->assertCount(1, $tags);
+        $this->assertSame(
+            ['class' => '', 'data-x' => '[&>span]:a', 'id' => 'i'],
+            $tags[0]['attributes']
+        );
+    }
+
     public function test_empty_content_returns_empty(): void
     {
         $tags = $this->parser->extractTags('');

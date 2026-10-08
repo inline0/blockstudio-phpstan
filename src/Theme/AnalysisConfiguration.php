@@ -17,11 +17,18 @@ final class AnalysisConfiguration
     ];
 
     private const KEYS = [
+        'blockTags',
         'configuration',
         'preset',
         'roots',
         'excludePaths',
         'maxFiles',
+    ];
+
+    private const BLOCK_TAG_KEYS = [
+        'aliases',
+        'elements',
+        'scanPhp',
     ];
 
     /**
@@ -119,6 +126,9 @@ final class AnalysisConfiguration
             true
         );
         $maxFiles = $this->optionalPositiveInteger($phpstan, 'maxFiles');
+        if (array_key_exists('blockTags', $phpstan)) {
+            $this->validateBlockTags($phpstan['blockTags']);
+        }
         $directory = dirname($path);
         $configuration = $this->optionalString($phpstan, 'configuration');
         if ($configuration !== null) {
@@ -274,6 +284,77 @@ final class AnalysisConfiguration
         }
 
         return $value;
+    }
+
+    /**
+     * The block tag rule reads phpstan.blockTags itself; the command rejects
+     * a malformed section up front so a typo cannot silently disable checks.
+     */
+    private function validateBlockTags(mixed $blockTags): void
+    {
+        if (!is_array($blockTags) || ($blockTags !== [] && array_is_list($blockTags))) {
+            throw new \InvalidArgumentException('blockstudio.json phpstan.blockTags must be a JSON object.');
+        }
+
+        $unknown = array_values(array_diff(array_keys($blockTags), self::BLOCK_TAG_KEYS));
+        sort($unknown);
+        if ($unknown !== []) {
+            throw new \InvalidArgumentException(sprintf(
+                'Unsupported blockstudio.json phpstan.blockTags key%s: %s.',
+                count($unknown) === 1 ? '' : 's',
+                implode(', ', $unknown)
+            ));
+        }
+
+        if (array_key_exists('scanPhp', $blockTags) && !is_bool($blockTags['scanPhp'])) {
+            throw new \InvalidArgumentException('blockstudio.json phpstan.blockTags.scanPhp must be a boolean.');
+        }
+
+        $aliases = $blockTags['aliases'] ?? [];
+        if (!is_array($aliases) || ($aliases !== [] && array_is_list($aliases))) {
+            throw new \InvalidArgumentException('blockstudio.json phpstan.blockTags.aliases must map tag names to block names.');
+        }
+        foreach ($aliases as $tag => $block) {
+            if (
+                !is_string($tag)
+                || preg_match('/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/', $tag) !== 1
+                || !is_string($block)
+                || preg_match('#^[a-z0-9-]+/[a-z0-9-]+$#', $block) !== 1
+            ) {
+                throw new \InvalidArgumentException(
+                    'blockstudio.json phpstan.blockTags.aliases must map hyphenated lowercase tag names to block names.'
+                );
+            }
+        }
+
+        $elements = $blockTags['elements'] ?? [];
+        if (!is_array($elements) || ($elements !== [] && array_is_list($elements))) {
+            throw new \InvalidArgumentException('blockstudio.json phpstan.blockTags.elements must map HTML element names to blocks.');
+        }
+        foreach ($elements as $element => $target) {
+            $rules = is_array($target) && array_is_list($target) ? $target : [$target];
+            $valid = is_string($element) && preg_match('/^[a-z][a-z0-9]*$/', $element) === 1 && $rules !== [];
+            foreach ($rules as $rule) {
+                $block = is_array($rule) ? ($rule['block'] ?? null) : $rule;
+                $extra = is_array($rule) ? array_diff(array_keys($rule), ['attribute', 'block']) : [];
+                $attribute = is_array($rule) ? ($rule['attribute'] ?? '') : '';
+                if (
+                    !is_string($block)
+                    || preg_match('#^[a-z0-9-]+/[a-z0-9-]+$#', $block) !== 1
+                    || $extra !== []
+                    || !is_string($attribute)
+                ) {
+                    $valid = false;
+                }
+            }
+
+            if (!$valid) {
+                throw new \InvalidArgumentException(sprintf(
+                    'blockstudio.json phpstan.blockTags.elements.%s must be a block name or a list of block names and {"attribute", "block"} rules.',
+                    is_string($element) ? $element : (string) $element
+                ));
+            }
+        }
     }
 
     private function absolutePath(string $path, string $base): string

@@ -93,6 +93,8 @@ services:
 
   -
     class: Blockstudio\PHPStan\Rules\BlockTagRule
+    arguments:
+      currentWorkingDirectory: %currentWorkingDirectory%
     tags:
       - phpstan.rules.rule
 

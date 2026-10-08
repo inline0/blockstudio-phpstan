@@ -66,18 +66,26 @@ Twig and Blade templates are checked too:
 
 ### Block tag validation
 
-Both `<block>` and `<bs:>` tag syntaxes are validated across PHP, Twig, and
-Blade templates.
+Block tags are validated in block templates (PHP, Twig, Blade), page layouts,
+and page sources below `pages/`: `<bs:>` and `<block>` tags, the prefix tags in
+`blockTags.prefixes`, alias tags, and, in page sources, the HTML elements a
+project maps to blocks. Bundled UI blocks are known when `ui.enabled` is on.
 
 ```html
 <bs:mytheme-hero title="Hello" />          <!-- OK -->
 <bs:mytheme-nonexistent />                 <!-- Error: unknown block -->
 <bs:mytheme-hero badattr="" />             <!-- Error: unknown attribute -->
+<bs:mytheme-hero class="wide" />           <!-- Error: class needs a class field -->
+<bs:mytheme-hero id="a" aria-label="A" />  <!-- OK: forwarded to the root -->
 <block name="core/separator" />            <!-- OK -->
 ```
 
-`data-*` and `html-*` attributes are treated as pass-through and are not
-validated.
+`data-*`, `aria-*`, `id`, `style`, `role`, `title`, `lang`, `dir`, `hidden`,
+and `tabindex` are forwarded to the root element and accepted; `html-*` passes
+through in templates and names one of those attributes in page sources.
+Element mappings, aliases, and an opt-in scan of other project PHP are read
+from `phpstan.blockTags` in `blockstudio.json`, because the runtime registers
+them in PHP filters.
 
 ### Typed `Db::get()` records
 

@@ -338,6 +338,15 @@ final class ProjectScanner
         $this->fields[$name][] = $path;
     }
 
+    /**
+     * Whether discovery skips a directory: dependency and build output
+     * directories, and every configured or PHPStan exclusion.
+     */
+    public function isExcludedPath(string $path): bool
+    {
+        return $this->shouldSkipDirectory($path);
+    }
+
     private function shouldSkipDirectory(string $path): bool
     {
         $base = basename($path);

@@ -5,144 +5,216 @@ declare(strict_types=1);
 namespace Blockstudio\PHPStan\Reflection;
 
 /**
- * Extracts <block> and <bs:> tags from template content.
+ * Extracts block tags from template and page source content.
  *
- * Ported from Blockstudio\Block_Tags::parse_single_block_tag() for use
- * at PHPStan analysis time. Handles quoted attributes, self-closing tags,
- * and nested containers without regex on the tag structure itself.
+ * Ported from Blockstudio\Block_Tags for use at PHPStan analysis time. Always
+ * recognizes <bs:namespace-slug> and <block name="...">; prefix tags such as
+ * <acme-slug>, alias tags, and element-mapped HTML tags are recognized when the
+ * caller names them. Openings end at the first ">" outside quotes and PHP
+ * spans, so attribute values may contain ">" and <?php ... ?> output.
  */
 final class BlockTagParser
 {
     /**
-     * @return list<array{name: string, attributes: array<string, string>, line: int}>
+     * @param list<string> $prefixes Tag prefixes from blockTags.prefixes, such as "acme".
+     * @param list<string> $aliases  Alias tag names, such as "theme-button".
+     * @param list<string> $elements HTML element names mapped to blocks, such as "section".
+     * @return list<array{
+     *   name: string,
+     *   tag: string,
+     *   kind: 'bs'|'block'|'prefix'|'alias'|'element',
+     *   candidates: list<string>,
+     *   attributes: array<string, string>,
+     *   line: int
+     * }>
      */
-    public function extractTags(string $content): array
-    {
+    public function extractTags(
+        string $content,
+        array $prefixes = [],
+        array $aliases = [],
+        array $elements = []
+    ): array {
+        if ($content === '' || !str_contains($content, '<')) {
+            return [];
+        }
+
+        $alternatives = [
+            'bs:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?',
+            'block',
+        ];
+        foreach ($aliases as $alias) {
+            $alternatives[] = preg_quote(strtolower($alias), '/');
+        }
+        foreach ($prefixes as $prefix) {
+            if (preg_match('/^[a-z][a-z0-9]*$/', $prefix) === 1) {
+                $alternatives[] = preg_quote($prefix, '/') . '-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?';
+            }
+        }
+        foreach ($elements as $element) {
+            if (preg_match('/^[a-z][a-z0-9]*$/', strtolower($element)) === 1) {
+                $alternatives[] = preg_quote(strtolower($element), '/');
+            }
+        }
+
+        $pattern = '/<(' . implode('|', $alternatives) . ')(?=[\s\/>])/i';
+        if (preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE) === false) {
+            return [];
+        }
+
+        $aliasNames = array_fill_keys(array_map('strtolower', $aliases), true);
+        $elementNames = array_fill_keys(array_map('strtolower', $elements), true);
         $tags = [];
-        $len = strlen($content);
-        $pos = 0;
 
-        while ($pos < $len) {
-            $bsPos = strpos($content, '<bs:', $pos);
-            $blockPos = strpos($content, '<block ', $pos);
-            if ($blockPos === false) {
-                $blockPos = strpos($content, '<block/', $pos);
+        foreach ($matches[1] as $index => [$tagName, $offset]) {
+            $start = $matches[0][$index][1];
+            $tagName = strtolower($tagName);
+            $open = $this->readOpening($content, $offset + strlen($tagName));
+            if ($open === null) {
+                continue;
             }
 
-            if ($bsPos === false && $blockPos === false) {
-                break;
+            $attributes = $this->parseAttributes($open);
+            $tag = $this->classify($tagName, $attributes, $aliasNames, $elementNames);
+            if ($tag === null) {
+                continue;
             }
 
-            if ($bsPos !== false && ($blockPos === false || $bsPos < $blockPos)) {
-                $tag = $this->parseBsTag($content, $bsPos, $len);
-                if ($tag !== null) {
-                    $tag['line'] = $this->lineAt($content, $bsPos);
-                    $tags[] = $tag;
-                    $pos = $bsPos + 1;
-                } else {
-                    $pos = $bsPos + 1;
-                }
-            } else {
-                $tag = $this->parseBlockTag($content, (int) $blockPos, $len);
-                if ($tag !== null) {
-                    $tag['line'] = $this->lineAt($content, (int) $blockPos);
-                    $tags[] = $tag;
-                    $pos = (int) $blockPos + 1;
-                } else {
-                    $pos = (int) $blockPos + 1;
-                }
-            }
+            $tag['line'] = $this->lineAt($content, $start);
+            $tags[] = $tag;
         }
 
         return $tags;
     }
 
     /**
-     * @return array{name: string, attributes: array<string, string>}|null
+     * @param array<string, string> $attributes
+     * @param array<string, true> $aliasNames
+     * @param array<string, true> $elementNames
+     * @return array{
+     *   name: string,
+     *   tag: string,
+     *   kind: 'bs'|'block'|'prefix'|'alias'|'element',
+     *   candidates: list<string>,
+     *   attributes: array<string, string>
+     * }|null
      */
-    private function parseBsTag(string $content, int $pos, int $len): ?array
-    {
-        $nameStart = $pos + 4;
-        $nameEnd = $nameStart;
+    private function classify(
+        string $tagName,
+        array $attributes,
+        array $aliasNames,
+        array $elementNames
+    ): ?array {
+        if (str_starts_with($tagName, 'bs:')) {
+            $candidates = $this->bsCandidates(substr($tagName, 3));
+            if ($candidates === []) {
+                return null;
+            }
 
-        while ($nameEnd < $len && preg_match('/[a-z0-9-]/', $content[$nameEnd])) {
-            $nameEnd++;
+            return [
+                'name' => $candidates[0],
+                'tag' => $tagName,
+                'kind' => 'bs',
+                'candidates' => $candidates,
+                'attributes' => $attributes,
+            ];
         }
 
-        $tagName = substr($content, $nameStart, $nameEnd - $nameStart);
-        if ($tagName === '' || !str_contains($tagName, '-')) {
-            return null;
+        if ($tagName === 'block') {
+            $blockName = $attributes['name'] ?? '';
+            unset($attributes['name']);
+            if ($blockName === '') {
+                return null;
+            }
+
+            return [
+                'name' => $blockName,
+                'tag' => $tagName,
+                'kind' => 'block',
+                'candidates' => [$blockName],
+                'attributes' => $attributes,
+            ];
         }
 
-        $blockName = substr_replace($tagName, '/', (int) strpos($tagName, '-'), 1);
-        $gt = $this->findClosingAngle($content, $nameEnd, $len);
-        if ($gt === null) {
-            return null;
-        }
-
-        $isSelfClosing = ($content[$gt - 1] === '/');
-        $attrEnd = $isSelfClosing ? $gt - 1 : $gt;
-        $attrString = trim(substr($content, $nameEnd, $attrEnd - $nameEnd));
+        $kind = isset($aliasNames[$tagName])
+            ? 'alias'
+            : (isset($elementNames[$tagName]) ? 'element' : 'prefix');
 
         return [
-            'name' => $blockName,
-            'attributes' => $this->parseAttributes($attrString),
+            'name' => '',
+            'tag' => $tagName,
+            'kind' => $kind,
+            'candidates' => [],
+            'attributes' => $attributes,
         ];
     }
 
     /**
-     * @return array{name: string, attributes: array<string, string>}|null
+     * Block names a <bs:> tag can stand for: each hyphen in turn becomes the
+     * namespace separator, as Block_Tags::resolve_bs_tag_name() tries them.
+     *
+     * @return list<string>
      */
-    private function parseBlockTag(string $content, int $pos, int $len): ?array
+    private function bsCandidates(string $tagName): array
     {
-        $attrStart = $pos + 6;
-        $gt = $this->findClosingAngle($content, $attrStart, $len);
-        if ($gt === null) {
-            return null;
+        $candidates = [];
+        $position = strpos($tagName, '-');
+
+        while ($position !== false) {
+            $candidates[] = substr_replace($tagName, '/', $position, 1);
+            $position = strpos($tagName, '-', $position + 1);
         }
 
-        $isSelfClosing = ($content[$gt - 1] === '/');
-        $attrEnd = $isSelfClosing ? $gt - 1 : $gt;
-        $attrString = trim(substr($content, $attrStart, $attrEnd - $attrStart));
-        $attrs = $this->parseAttributes($attrString);
-
-        $blockName = $attrs['name'] ?? '';
-        unset($attrs['name']);
-
-        if ($blockName === '') {
-            return null;
-        }
-
-        return [
-            'name' => $blockName,
-            'attributes' => $attrs,
-        ];
+        return $candidates;
     }
 
-    private function findClosingAngle(string $content, int $from, int $len): ?int
+    /**
+     * Read an opening tag's attribute text up to its closing angle.
+     *
+     * Quoted values and PHP spans are skipped; a PHP span outside quotes
+     * becomes a space, because its output is not known statically.
+     */
+    private function readOpening(string $content, int $from): ?string
     {
-        $inDouble = false;
-        $inSingle = false;
+        $length = strlen($content);
+        $quote = null;
+        $source = '';
 
-        for ($i = $from; $i < $len; $i++) {
-            $ch = $content[$i];
-            if ($ch === '"' && !$inSingle) {
-                $inDouble = !$inDouble;
-            } elseif ($ch === "'" && !$inDouble) {
-                $inSingle = !$inSingle;
-            } elseif ($ch === '>' && !$inDouble && !$inSingle) {
-                return $i;
+        for ($i = $from; $i < $length; $i++) {
+            if ($content[$i] === '<' && ($content[$i + 1] ?? '') === '?') {
+                $end = strpos($content, '?>', $i + 2);
+                if ($end === false) {
+                    return null;
+                }
+                $source .= $quote === null ? ' ' : '';
+                $i = $end + 1;
+                continue;
             }
+
+            $char = $content[$i];
+            if ($quote !== null) {
+                if ($char === $quote) {
+                    $quote = null;
+                }
+            } elseif ($char === '"' || $char === "'") {
+                $quote = $char;
+            } elseif ($char === '>') {
+                return rtrim(rtrim($source), '/');
+            }
+
+            $source .= $char;
         }
 
         return null;
     }
 
     /**
+     * Parse attributes the way Block_Tags::parse_attributes() reads them.
+     *
      * @return array<string, string>
      */
     private function parseAttributes(string $attrString): array
     {
+        $attrString = trim($attrString);
         if ($attrString === '') {
             return [];
         }

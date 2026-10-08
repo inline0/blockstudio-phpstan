@@ -24,7 +24,7 @@ final class PresetContract
             'Twig and Blade templates must read declared field keys too.',
         ],
         'Blockstudio\PHPStan\Rules\BlockTagRule' => [
-            'A block tag must name a registered block and pass only attributes that block declares.',
+            'A block tag, and in page sources an HTML element mapped to a block, must name a registered block and pass only attributes that block declares as fields or forwards to its root element (`data-*`, `aria-*`, `id`, `style`, `role`, `title`, `lang`, `dir`, `hidden`, `tabindex`); an undeclared `class` is dropped.',
         ],
         'Blockstudio\PHPStan\Rules\BlockJsonShapeRule' => [
             '`block.json` attributes must use a known field type, carry an `id` when the type stores a value, and give `select`, `radio`, and `checkbox` fields their options.',
