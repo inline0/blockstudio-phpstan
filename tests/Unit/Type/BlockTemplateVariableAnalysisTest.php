@@ -28,6 +28,30 @@ final class BlockTemplateVariableAnalysisTest extends TestCase
         );
     }
 
+    public function test_narrowed_offsets_keep_the_declared_type(): void
+    {
+        $analysis = $this->analyseFixture();
+
+        // PHPStan 2.3 prices `isset()` and the left side of `??` from scope
+        // state; the declared shape still has to reach those reads.
+        $this->assertSame(
+            [],
+            $analysis['messages']['blockstudio/narrowing/index.php'] ?? [],
+            'Narrowed offset reads should keep the block.json types.'
+        );
+    }
+
+    public function test_a_template_that_assigns_the_variable_keeps_its_own_type(): void
+    {
+        $analysis = $this->analyseFixture();
+
+        $this->assertSame(
+            [],
+            $analysis['messages']['blockstudio/written/index.php'] ?? [],
+            'An assigned template variable should keep the assigned type.'
+        );
+    }
+
     public function test_attribute_shape_reaches_the_analysis(): void
     {
         $analysis = $this->analyseFixture();
