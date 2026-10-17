@@ -100,12 +100,13 @@ final class FieldTypeRegistryTest extends TestCase
         $this->assertStringContainsString('opacity', $description);
     }
 
-    public function test_link_returns_array_with_href(): void
+    public function test_link_returns_array_with_url(): void
     {
         $result = $this->registry->getTypeForField(['type' => 'link']);
         $this->assertInstanceOf(ConstantArrayType::class, $result);
         $description = $result->describe(VerbosityLevel::precise());
-        $this->assertStringContainsString('href', $description);
+        $this->assertStringContainsString('url', $description);
+        $this->assertStringNotContainsString('href', $description);
         $this->assertStringContainsString('title', $description);
         $this->assertStringContainsString('target', $description);
         $this->assertStringContainsString('opensInNewTab', $description);

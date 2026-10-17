@@ -9,6 +9,14 @@
 function bs_render_block(array $args): string {}
 
 /**
+ * Validate a parsed block's stored values without rendering or writing them.
+ *
+ * @param array<string, mixed> $attrs
+ * @return list<array{code:string,path:string,source:string,message:string,value:mixed,expected:mixed}>|null
+ */
+function bs_validate_block(string $name, array $attrs): ?array {}
+
+/**
  * Extract a group's child fields from an attributes array.
  *
  * @param array<string, mixed> $attributes

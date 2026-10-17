@@ -1,6 +1,6 @@
 <?php
 
-$href = trim( $a['cta']['href'] ?? '' );
+$href = trim( $a['cta']['url'] ?? '' );
 $label = strtolower( $a['label'] ?? '' );
 
 if ( $a['featured'] ?? false ) {

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use function PHPStan\Testing\assertType;
 
-assertType('array{title: string, featured: bool, cta: array{href: string, title: string|null, target: string|null, opensInNewTab: bool|null}, items: array<int, array{label: string}>}', $a);
-assertType('array{title: string, featured: bool, cta: array{href: string, title: string|null, target: string|null, opensInNewTab: bool|null}, items: array<int, array{label: string}>}', $attributes);
+assertType('array{title: string, featured: bool, cta: array{url: string, title: string|null, target: string|null, opensInNewTab: bool|null}, items: array<int, array{label: string}>}', $a);
+assertType('array{title: string, featured: bool, cta: array{url: string, title: string|null, target: string|null, opensInNewTab: bool|null}, items: array<int, array{label: string}>}', $attributes);
 assertType('string', $a['title']);
 assertType('bool', $a['featured']);
-assertType('string', $a['cta']['href']);
+assertType('string', $a['cta']['url']);
 assertType('string|null', $a['cta']['target']);
 assertType('array<int, array{label: string}>', $a['items']);
 assertType('array<string, mixed>', $b);

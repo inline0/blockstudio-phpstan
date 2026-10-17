@@ -127,7 +127,7 @@ final class BlockTemplateVariableType implements ExpressionTypeResolverExtension
 
     /**
      * The declared type of a template variable's offset chain such as
-     * `$a['cta']['href']`, each link narrowed by the type the scope tracks
+     * `$a['cta']['url']`, each link narrowed by the type the scope tracks
      * for it, or null when a link is not a known offset of its parent.
      *
      * @param callable(Expr): mixed $stateReader

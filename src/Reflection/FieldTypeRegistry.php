@@ -51,7 +51,7 @@ final class FieldTypeRegistry
             ]),
 
             'link' => $this->buildShape([
-                'href' => new StringType(),
+                'url' => new StringType(),
                 'title' => TypeCombinator::union(new StringType(), new NullType()),
                 'target' => TypeCombinator::union(new StringType(), new NullType()),
                 'opensInNewTab' => TypeCombinator::union(new BooleanType(), new NullType()),

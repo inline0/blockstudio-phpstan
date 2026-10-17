@@ -9,3 +9,12 @@ assertType('mixed', $attributes);
 assertType('mixed', $b);
 assertType('mixed', $content);
 assertType('mixed', $isEditor);
+
+$findings = bs_validate_block('theme/card', []);
+assertType('list<array{code: string, path: string, source: string, message: string, value: mixed, expected: mixed}>|null', $findings);
+if ($findings !== null) {
+    foreach ($findings as $finding) {
+        assertType('string', $finding['code']);
+        assertType('mixed', $finding['value']);
+    }
+}
