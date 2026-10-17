@@ -16,3 +16,4 @@ add_filter('blockstudio/ui/inventory', function ($inventory) { return $inventory
 add_filter('blockstudio/tailwind/css', function ($css) { return $css; });
 add_filter('blockstudio/path', function () { return ''; });
 add_filter('blockstudio/url', function ($url) { return $url; });
+add_filter('blockstudio/updater/token', static fn(string $token): string => getenv('BLOCKSTUDIO_GITHUB_TOKEN') ?: $token);

@@ -166,6 +166,7 @@ final class HookCallbackRule implements Rule
         'blockstudio/ui/directories',
         'blockstudio/ui/examples',
         'blockstudio/ui/inventory',
+        'blockstudio/updater/token',
         'blockstudio/url',
     ];
 
