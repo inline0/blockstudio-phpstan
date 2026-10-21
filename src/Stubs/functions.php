@@ -30,6 +30,16 @@ function bs_get_group(array $attributes, string $group_id): array {}
 function bs_get_scoped_class(string $block_name): string {}
 
 /**
+ * Whether Blockstudio is rendering for the block editor canvas.
+ */
+function bs_is_editor(): bool {}
+
+/**
+ * Whether Blockstudio is rendering for the block inserter preview.
+ */
+function bs_is_preview(): bool {}
+
+/**
  * Render a database form for a block schema.
  *
  * @param array{block: string, schema?: string, fields?: list<string>} $args

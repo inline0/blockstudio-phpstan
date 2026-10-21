@@ -18,3 +18,6 @@ if ($findings !== null) {
         assertType('mixed', $finding['value']);
     }
 }
+
+assertType('bool', bs_is_editor());
+assertType('bool', bs_is_preview());

@@ -1,4 +1,5 @@
 <?php
+add_filter('blockstudio/cache/populate_ignored_meta_keys', static fn(array $keys): array => [...$keys, '_test_bookkeeping']);
 
 add_filter('blockstudio/static_prerender/public_urls', function ($urls) { return $urls; });
 add_filter('blockstudio/static_prerender/cacheable_html', function ($cacheable) { return $cacheable; });
@@ -16,4 +17,5 @@ add_filter('blockstudio/ui/inventory', function ($inventory) { return $inventory
 add_filter('blockstudio/tailwind/css', function ($css) { return $css; });
 add_filter('blockstudio/path', function () { return ''; });
 add_filter('blockstudio/url', function ($url) { return $url; });
+add_filter('blockstudio/wpml/config/label', function ($label) { return $label; });
 add_filter('blockstudio/updater/token', static fn(string $token): string => getenv('BLOCKSTUDIO_GITHUB_TOKEN') ?: $token);

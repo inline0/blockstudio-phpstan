@@ -67,6 +67,7 @@ final class HookCallbackRule implements Rule
         'blockstudio/cache/max_files_per_scope',
         'blockstudio/cache/outcome',
         'blockstudio/cache/populate_debounce',
+        'blockstudio/cache/populate_ignored_meta_keys',
         'blockstudio/cache/protected_paths',
         'blockstudio/cache/site_key',
         'blockstudio/cache/watch_debounce',
@@ -169,6 +170,7 @@ final class HookCallbackRule implements Rule
         'blockstudio/ui/inventory',
         'blockstudio/updater/token',
         'blockstudio/url',
+        'blockstudio/wpml/config/label',
     ];
 
     /** @var list<string> */
