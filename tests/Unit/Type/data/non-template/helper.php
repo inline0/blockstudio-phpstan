@@ -25,3 +25,4 @@ assertType('array<string, mixed>|null', $values);
 assertType('bool', bs_is_editor());
 assertType('bool', bs_is_preview());
 assertType('bool', bs_is_buffering());
+assertType('string', bs_strip_render_markers('<!--blockstudio/theme/card--><div></div>'));
