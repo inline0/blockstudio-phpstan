@@ -40,6 +40,11 @@ function bs_is_editor(): bool {}
 function bs_is_preview(): bool {}
 
 /**
+ * Remove the comments Blockstudio puts in front of every rendered block.
+ */
+function bs_strip_render_markers(string $html): string {}
+
+/**
  * Render a database form for a block schema.
  *
  * @param array{block: string, schema?: string, fields?: list<string>} $args
