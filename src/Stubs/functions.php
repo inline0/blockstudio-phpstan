@@ -40,6 +40,11 @@ function bs_is_editor(): bool {}
 function bs_is_preview(): bool {}
 
 /**
+ * Whether Blockstudio is buffering the current frontend response.
+ */
+function bs_is_buffering(): bool {}
+
+/**
  * Render a database form for a block schema.
  *
  * @param array{block: string, schema?: string, fields?: list<string>} $args

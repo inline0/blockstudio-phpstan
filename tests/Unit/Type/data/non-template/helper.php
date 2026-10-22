@@ -21,3 +21,4 @@ if ($findings !== null) {
 
 assertType('bool', bs_is_editor());
 assertType('bool', bs_is_preview());
+assertType('bool', bs_is_buffering());
