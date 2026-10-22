@@ -17,6 +17,14 @@ function bs_render_block(array $args): string {}
 function bs_validate_block(string $name, array $attrs): ?array {}
 
 /**
+ * Get a stored block's values as its template receives them, without rendering.
+ *
+ * @param array<string, mixed> $attrs
+ * @return array<string, mixed>|null
+ */
+function bs_block_values(string $name, array $attrs): ?array {}
+
+/**
  * Extract a group's child fields from an attributes array.
  *
  * @param array<string, mixed> $attributes
