@@ -42,6 +42,7 @@ final class HookCallbackRule implements Rule
         'blockstudio/block_tags/renderers',
         'blockstudio/block_tags/tag_aliases',
         'blockstudio/blocks/attributes',
+        'blockstudio/blocks/attributes/files/sizes',
         'blockstudio/blocks/attributes/populate',
         'blockstudio/blocks/attributes/render',
         'blockstudio/blocks/attributes/validate',

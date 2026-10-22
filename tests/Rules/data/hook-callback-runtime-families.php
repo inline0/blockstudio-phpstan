@@ -19,3 +19,4 @@ add_filter('blockstudio/path', function () { return ''; });
 add_filter('blockstudio/url', function ($url) { return $url; });
 add_filter('blockstudio/wpml/config/label', function ($label) { return $label; });
 add_filter('blockstudio/updater/token', static fn(string $token): string => getenv('BLOCKSTUDIO_GITHUB_TOKEN') ?: $token);
+add_filter('blockstudio/blocks/attributes/files/sizes', static fn(array $sizes): array => ['full', 'large']);
