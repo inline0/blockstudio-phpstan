@@ -19,6 +19,9 @@ if ($findings !== null) {
     }
 }
 
+$values = bs_block_values('theme/card', []);
+assertType('array<string, mixed>|null', $values);
+
 assertType('bool', bs_is_editor());
 assertType('bool', bs_is_preview());
 assertType('bool', bs_is_buffering());
