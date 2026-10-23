@@ -9,6 +9,7 @@ add_action('blockstudio/pages/reconciled', function () {});
 add_filter('blockstudio/canvas/inventory', function ($inventory) { return $inventory; });
 add_action('blockstudio/db/before_create', function () {});
 add_filter('blockstudio/cache/dir', function ($dir) { return $dir; });
+add_filter('blockstudio/cache/compress', static fn(bool $compress, string $scope): bool => $scope === 'runtime' ? false : $compress, 10, 2);
 add_filter('blockstudio/discovery/sources', function ($sources) { return $sources; });
 add_filter('blockstudio/field_types', function ($types) { return $types; });
 add_filter('blockstudio/block_tags/prefixes', function ($prefixes) { return $prefixes; });
