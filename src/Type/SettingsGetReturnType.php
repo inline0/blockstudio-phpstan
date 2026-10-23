@@ -36,6 +36,7 @@ final class SettingsGetReturnType implements DynamicStaticMethodReturnTypeExtens
             'assets/process/scss' => new BooleanType(),
             'assets/process/scssFiles' => new BooleanType(),
             'assets/output' => new StringType(),
+            'assets/inlineLimit' => new IntegerType(),
             'cache/enabled' => new BooleanType(),
             'cache/path' => new StringType(),
             'githooks/commit' => new BooleanType(),
