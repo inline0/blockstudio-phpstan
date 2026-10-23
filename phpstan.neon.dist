@@ -4,17 +4,13 @@ includes:
   - extension.neon
 
 parameters:
-  # The rules use their own scanner, so PHPStan's excludePaths does not reach
-  # them. Without this they walk the fixture projects the rules are tested
-  # against and report their deliberate defects as findings.
+  # Keep deliberately invalid fixtures out of the rules' schema discovery.
   blockstudioExcludePaths:
     - tests/**
     - vendor/**
   level: 8
   paths:
     - src
-  # tests/ is not analysed yet: 212 findings at this level, almost all in test
-  # scaffolding rather than the rules themselves. That is the next ratchet.
 
   excludePaths:
     - src/Stubs/*

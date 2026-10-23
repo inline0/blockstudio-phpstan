@@ -45,10 +45,8 @@ final class BlockJsonReaderTest extends TestCase
 
         $this->assertNotNull($type);
         $description = $type->describe(VerbosityLevel::precise());
-        // Group "cta" with children "text" and "url" becomes "cta_text" and "cta_url"
         $this->assertStringContainsString('cta_text', $description);
         $this->assertStringContainsString('cta_url', $description);
-        // The original group key "cta" should NOT be a top-level key
         $this->assertStringNotContainsString("'cta'", $description);
     }
 
@@ -79,7 +77,6 @@ final class BlockJsonReaderTest extends TestCase
 
         $this->assertNotNull($type);
         $description = $type->describe(VerbosityLevel::precise());
-        // Tabs flatten to top level (not prefixed with the tabs field id)
         $this->assertStringContainsString('title', $description);
         $this->assertStringContainsString('color', $description);
     }

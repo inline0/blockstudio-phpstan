@@ -97,11 +97,9 @@ final class BlockTemplateVariableType implements ExpressionTypeResolverExtension
                 return $declared;
             }
 
-            // The scope also reports a template variable as defined once a
-            // condition narrowed it (`isset( $a['x'] )` leaves `$a` as
-            // `hasOffset('x')` on an otherwise mixed value). Unless the
-            // template assigns the variable itself, that narrowing applies to
-            // the type Blockstudio passes in.
+            // Conditions such as isset() can mark an injected variable as
+            // defined without assigning it. Only explicit writes replace
+            // Blockstudio's declared type; conditions narrow it.
             if ($written) {
                 return null;
             }
@@ -109,14 +107,10 @@ final class BlockTemplateVariableType implements ExpressionTypeResolverExtension
             return self::narrow($declared, $scope->getVariableType($name));
         }
 
-        // Offset reads on a template variable. PHPStan 2.3 prices the left
-        // side of `??` and `isset()` from the scope's own state, which never
-        // asks this extension about the variable, so `$a['x'] ?? ''` came out
-        // as mixed. Answer the offset chain from the declared type instead,
-        // narrowed by whatever the scope tracks for the expression.
-        // The scope's tracked state is read through getStateType(), which
-        // PHPStan 2.3 added to its scope. Earlier releases price these reads
-        // through this extension already, so they keep the old behaviour.
+        // PHPStan 2.3 resolves ?? and isset() offsets from scope state without
+        // asking this extension for the variable's type. Combine the declared
+        // type with getStateType() narrowing; older releases already resolve
+        // these reads through this extension and do not expose that method.
         $stateReader = [$scope, 'getStateType'];
         if ($written || !is_callable($stateReader)) {
             return null;
@@ -225,8 +219,8 @@ final class BlockTemplateVariableType implements ExpressionTypeResolverExtension
         }
 
         if ($ast === null) {
-            // Unparseable here means unknown: treat every name as written so
-            // the scope's own type wins, which is the conservative answer.
+            // Parsing failed, so assume every variable may be written and
+            // defer to the scope's types.
             $all = [];
             foreach ([self::ATTRIBUTE_VARIABLES, self::ARRAY_VARIABLES, self::STRING_VARIABLES, self::BOOLEAN_VARIABLES] as $names) {
                 $all += $names;

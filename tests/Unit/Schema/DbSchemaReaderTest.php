@@ -53,7 +53,6 @@ final class DbSchemaReaderTest extends TestCase
         $this->assertNotNull($type);
 
         $description = $type->describe(VerbosityLevel::precise());
-        // 'name' is required, should be just 'string' not 'string|null'
         $this->assertMatchesRegularExpression("/name:\s*string/", $description);
     }
 
@@ -63,7 +62,6 @@ final class DbSchemaReaderTest extends TestCase
         $this->assertNotNull($type);
 
         $description = $type->describe(VerbosityLevel::precise());
-        // 'optional_str' is not required, should be 'string|null'
         $this->assertMatchesRegularExpression("/optional_str\??:\s*string\|null/", $description);
     }
 

@@ -96,9 +96,8 @@ final class ProjectScanner
             $normalized = substr($normalized, strlen($root) + 1);
         }
 
-        // A scan root of "." arrives as "<root>/." and yields "./path" entries.
-        // Left in place the prefix defeats every exclude pattern and leaks into
-        // error messages.
+        // A "." scan root leaves a "./" prefix that breaks exclusion matching
+        // and appears in diagnostics.
         while (str_starts_with($normalized, './')) {
             $normalized = substr($normalized, 2);
         }
