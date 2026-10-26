@@ -1,0 +1,22 @@
+{
+  "name": "bad",
+  "attributes": [
+    { "id": "account", "type": "text", "translate": false },
+    { "id": "email", "type": "text", "translat": false },
+    {
+      "id": "rows",
+      "type": "repeater",
+      "textRemove": false,
+      "attributes": [{ "id": "label", "type": "text", "minimized": true }]
+    },
+    {
+      "type": "group",
+      "attributes": [
+        {
+          "type": "tabs",
+          "tabs": [{ "title": "Icon", "attributes": [{ "id": "icon", "type": "icon", "set": "heroicons" }] }]
+        }
+      ]
+    }
+  ]
+}

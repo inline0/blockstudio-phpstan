@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Blockstudio\PHPStan\Rules;
 
 use Blockstudio\PHPStan\Schema\CustomFieldResolver;
+use Blockstudio\PHPStan\Schema\FieldProperties;
 use Blockstudio\PHPStan\Schema\ProjectScanner;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
@@ -19,16 +20,6 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 final class FieldJsonShapeRule implements Rule
 {
-    private const VALID_FIELD_TYPES = [
-        'text', 'textarea', 'richtext', 'wysiwyg', 'code',
-        'number', 'range', 'toggle',
-        'select', 'radio', 'checkbox',
-        'color', 'gradient', 'link', 'files', 'icon',
-        'date', 'datetime', 'classes', 'html-tag', 'unit',
-        'attributes', 'block', 'message',
-        'group', 'repeater', 'tabs',
-    ];
-
     /** @var array<string, true> */
     private static array $validatedPaths = [];
 
@@ -148,7 +139,7 @@ final class FieldJsonShapeRule implements Rule
                 continue;
             }
 
-            if (!str_starts_with($type, 'custom/') && !in_array($type, self::VALID_FIELD_TYPES, true)) {
+            if (!str_starts_with($type, 'custom/') && !FieldProperties::isBuiltInType($type)) {
                 $errors[] = RuleErrorBuilder::message(sprintf(
                     'field.json field "%s" has unknown type "%s": %s',
                     $this->getFieldLabel($field, $i),
@@ -168,6 +159,21 @@ final class FieldJsonShapeRule implements Rule
                     $this->scanner->relativePath($path)
                 ))
                     ->identifier('blockstudio.fieldJson.attributes')
+                    ->file($path)
+                    ->build();
+            }
+
+            foreach (FieldProperties::unknownKeys($field, $type) as $key) {
+                $suggestion = FieldProperties::suggest($key, $type);
+                $errors[] = RuleErrorBuilder::message(sprintf(
+                    'field.json field "%s" of type "%s" has unknown property "%s": %s%s',
+                    $this->getFieldLabel($field, $i),
+                    $type,
+                    $key,
+                    $this->scanner->relativePath($path),
+                    $suggestion !== null ? sprintf('. Did you mean "%s"?', $suggestion) : ''
+                ))
+                    ->identifier('blockstudio.fieldJson.property')
                     ->file($path)
                     ->build();
             }

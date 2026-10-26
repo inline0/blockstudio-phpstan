@@ -3,7 +3,8 @@
   "attributes": [
     {
       "id": "fluid",
-      "type": "toggle"
+      "type": "toggle",
+      "translate": false
     }
   ]
 }

@@ -6,6 +6,7 @@ namespace Blockstudio\PHPStan\Rules;
 
 use Blockstudio\PHPStan\Schema\BlockJsonReader;
 use Blockstudio\PHPStan\Schema\CustomFieldResolver;
+use Blockstudio\PHPStan\Schema\FieldProperties;
 use Blockstudio\PHPStan\Schema\ProjectScanner;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
@@ -24,16 +25,6 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 final class BlockJsonShapeRule implements Rule
 {
-    private const VALID_FIELD_TYPES = [
-        'text', 'textarea', 'richtext', 'wysiwyg', 'code',
-        'number', 'range', 'toggle',
-        'select', 'radio', 'checkbox',
-        'color', 'gradient', 'link', 'files', 'icon',
-        'date', 'datetime', 'classes', 'html-tag', 'unit',
-        'attributes', 'block', 'message',
-        'group', 'repeater', 'tabs',
-    ];
-
     /** @var array<string, true> */
     private static array $validatedPaths = [];
 
@@ -285,7 +276,7 @@ final class BlockJsonShapeRule implements Rule
                 continue;
             }
 
-            if (!str_starts_with($type, 'custom/') && !in_array($type, self::VALID_FIELD_TYPES, true)) {
+            if (!str_starts_with($type, 'custom/') && !FieldProperties::isBuiltInType($type)) {
                 $errors[] = RuleErrorBuilder::message(sprintf(
                     'block.json field "%s" has unknown type "%s" in %s',
                     $this->getFieldLabel($field, $i),
@@ -336,6 +327,21 @@ final class BlockJsonShapeRule implements Rule
                         ->file($path)
                         ->build();
                 }
+            }
+
+            foreach (FieldProperties::unknownKeys($field, $type) as $key) {
+                $suggestion = FieldProperties::suggest($key, $type);
+                $errors[] = RuleErrorBuilder::message(sprintf(
+                    'block.json field "%s" of type "%s" has unknown property "%s" in %s%s',
+                    $this->getFieldLabel($field, $i),
+                    $type,
+                    $key,
+                    $this->scanner->relativePath($path),
+                    $suggestion !== null ? sprintf('. Did you mean "%s"?', $suggestion) : ''
+                ))
+                    ->identifier('blockstudio.blockJson.property')
+                    ->file($path)
+                    ->build();
             }
 
             if ($type === 'tabs' && $inRepeater) {
