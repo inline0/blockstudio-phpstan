@@ -169,6 +169,35 @@ final class BlockJsonShapeRuleTest extends RuleTestCase
         );
     }
 
+    public function test_unknown_field_properties_reported(): void
+    {
+        $this->fixtureDir = __DIR__ . '/data/shape/unknown-property';
+        $errors = array_values(array_filter(
+            $this->gatherErrors([$this->fixtureDir . '/blockstudio/bad/index.php']),
+            static fn(string $error): bool => str_contains($error, 'has unknown property')
+        ));
+        sort($errors);
+
+        $this->assertSame(
+            [
+                'block.json field "account" of type "text" has unknown property "translat" in blockstudio/bad/block.json. Did you mean "translate"?',
+                'block.json field "email" of type "text" has unknown property "minimized" in blockstudio/bad/block.json',
+                'block.json field "icon" of type "icon" has unknown property "set" in blockstudio/bad/block.json. Did you mean "sets"?',
+                'block.json field "rows" of type "repeater" has unknown property "textRemov" in blockstudio/bad/block.json. Did you mean "textRemove"?',
+            ],
+            $errors
+        );
+    }
+
+    public function test_known_field_properties_pass(): void
+    {
+        $this->fixtureDir = __DIR__ . '/data/shape/known-properties';
+        $this->analyse(
+            [$this->fixtureDir . '/blockstudio/good/index.php'],
+            []
+        );
+    }
+
     /**
      * @param list<string> $files
      * @return list<string>

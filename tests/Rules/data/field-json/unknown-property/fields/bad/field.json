@@ -1,0 +1,7 @@
+{
+  "name": "bad",
+  "attributes": [
+    { "id": "account", "type": "text", "translate": false },
+    { "id": "email", "type": "text", "translat": false }
+  ]
+}

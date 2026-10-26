@@ -1,0 +1,25 @@
+{
+  "name": "test/bad",
+  "blockstudio": {
+    "attributes": [
+      { "id": "account", "type": "text", "translat": false },
+      {
+        "id": "rows",
+        "type": "repeater",
+        "textRemov": "Delete this row?",
+        "attributes": [{ "id": "email", "type": "text", "minimized": true }]
+      },
+      {
+        "type": "tabs",
+        "tabs": [
+          {
+            "title": "Icon",
+            "attributes": [
+              { "id": "icon", "type": "icon", "set": "heroicons" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

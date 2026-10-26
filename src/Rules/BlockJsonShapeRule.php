@@ -6,6 +6,7 @@ namespace Blockstudio\PHPStan\Rules;
 
 use Blockstudio\PHPStan\Schema\BlockJsonReader;
 use Blockstudio\PHPStan\Schema\CustomFieldResolver;
+use Blockstudio\PHPStan\Schema\FieldProperties;
 use Blockstudio\PHPStan\Schema\ProjectScanner;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
@@ -336,6 +337,21 @@ final class BlockJsonShapeRule implements Rule
                         ->file($path)
                         ->build();
                 }
+            }
+
+            foreach (FieldProperties::unknownKeys($field, $type) as $key) {
+                $suggestion = FieldProperties::suggest($key, $type);
+                $errors[] = RuleErrorBuilder::message(sprintf(
+                    'block.json field "%s" of type "%s" has unknown property "%s" in %s%s',
+                    $this->getFieldLabel($field, $i),
+                    $type,
+                    $key,
+                    $this->scanner->relativePath($path),
+                    $suggestion !== null ? sprintf('. Did you mean "%s"?', $suggestion) : ''
+                ))
+                    ->identifier('blockstudio.blockJson.property')
+                    ->file($path)
+                    ->build();
             }
 
             if ($type === 'tabs' && $inRepeater) {

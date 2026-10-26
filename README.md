@@ -165,7 +165,8 @@ The extension validates Blockstudio schema files across the project:
 - `cron.php`
 - `blockstudio.json`
 
-That covers missing required keys, invalid field types, malformed schema
+That covers missing required keys, invalid field types, field properties a
+field type does not accept (with a suggestion for typos), malformed schema
 shapes, bad RPC method values, invalid cron schedules, and deprecated settings
 shorthand such as `"tailwind": true`.
 

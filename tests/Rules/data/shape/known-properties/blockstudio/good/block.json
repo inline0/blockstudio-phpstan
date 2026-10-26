@@ -1,0 +1,42 @@
+{
+  "name": "test/good",
+  "blockstudio": {
+    "attributes": [
+      {
+        "id": "account",
+        "type": "text",
+        "label": "Account",
+        "help": "Key of the account",
+        "translate": false,
+        "conditions": [[{ "id": "layout", "operator": "==", "value": "a" }]]
+      },
+      {
+        "id": "layout",
+        "type": "radio",
+        "display": "buttonGroup",
+        "allowNull": true,
+        "options": [{ "value": "a", "label": "A" }]
+      },
+      {
+        "id": "choices",
+        "type": "checkbox",
+        "toggle": "Select all",
+        "options": [{ "value": "a", "label": "A" }]
+      },
+      {
+        "id": "color",
+        "type": "color",
+        "default": "#f00",
+        "options": [{ "name": "Red", "value": "#f00", "slug": "red" }]
+      },
+      {
+        "id": "rows",
+        "type": "repeater",
+        "minimized": true,
+        "textRemove": "Delete this row?",
+        "default": [{ "label": "First" }],
+        "attributes": [{ "id": "label", "type": "text", "default": "New" }]
+      }
+    ]
+  }
+}

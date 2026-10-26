@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Blockstudio\PHPStan\Rules;
 
 use Blockstudio\PHPStan\Schema\CustomFieldResolver;
+use Blockstudio\PHPStan\Schema\FieldProperties;
 use Blockstudio\PHPStan\Schema\ProjectScanner;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
@@ -168,6 +169,21 @@ final class FieldJsonShapeRule implements Rule
                     $this->scanner->relativePath($path)
                 ))
                     ->identifier('blockstudio.fieldJson.attributes')
+                    ->file($path)
+                    ->build();
+            }
+
+            foreach (FieldProperties::unknownKeys($field, $type) as $key) {
+                $suggestion = FieldProperties::suggest($key, $type);
+                $errors[] = RuleErrorBuilder::message(sprintf(
+                    'field.json field "%s" of type "%s" has unknown property "%s": %s%s',
+                    $this->getFieldLabel($field, $i),
+                    $type,
+                    $key,
+                    $this->scanner->relativePath($path),
+                    $suggestion !== null ? sprintf('. Did you mean "%s"?', $suggestion) : ''
+                ))
+                    ->identifier('blockstudio.fieldJson.property')
                     ->file($path)
                     ->build();
             }

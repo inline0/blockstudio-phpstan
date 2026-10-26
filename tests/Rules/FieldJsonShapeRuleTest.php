@@ -109,6 +109,23 @@ final class FieldJsonShapeRuleTest extends RuleTestCase
         $this->analyse([$this->fixtureDir . '/blockstudio/hero/index.php'], []);
     }
 
+    public function test_unknown_field_property_reported(): void
+    {
+        $this->fixtureDir = __DIR__ . '/data/field-json/unknown-property';
+        $errors = array_values(array_filter(
+            array_map(
+                static fn($e) => $e->getMessage(),
+                $this->gatherAnalyserErrors([$this->fixtureDir . '/blockstudio/hero/index.php'])
+            ),
+            static fn(string $error): bool => str_contains($error, 'has unknown property')
+        ));
+
+        $this->assertSame(
+            ['field.json field "email" of type "text" has unknown property "translat": fields/bad/field.json. Did you mean "translate"?'],
+            $errors
+        );
+    }
+
     /**
      * @return list<string>
      */
